@@ -234,20 +234,6 @@ public class MapDemoActivity extends FragmentActivity implements
 
                         public View getInfoContents(final Marker marker) {
 
-                            TextView txtLink = ((TextView) contents.findViewById(R.id.link));
-                            txtLink.setOnClickListener(new View.OnClickListener() {
-
-                                @Override
-                                public void onClick(View view) {
-
-                                    Uri gmmIntentUri = Uri.parse("google.navigation:q="+marker.getPosition());
-                                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                                    mapIntent.setPackage("com.google.android.apps.maps");
-                                }
-
-                            });
-
-
 
                             TextView txtTitle = ((TextView) contents.findViewById(R.id.titre));
 

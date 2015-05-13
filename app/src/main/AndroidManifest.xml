@@ -53,7 +53,7 @@
         </activity>
 
         <provider
-            android:name=".PlaceProvider"
+            android:name="com.example.mapdemo.PlaceProvider"
             android:authorities="com.example.mapdemo.PlaceProvider"
             android:exported="false" />
         
