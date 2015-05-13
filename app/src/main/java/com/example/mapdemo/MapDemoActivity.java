@@ -76,6 +76,7 @@ public class MapDemoActivity extends FragmentActivity implements
     private double longitude;
     private float accuracy;
 
+    //Test synchro github
 
     private Marker markerSearch = null;
 
