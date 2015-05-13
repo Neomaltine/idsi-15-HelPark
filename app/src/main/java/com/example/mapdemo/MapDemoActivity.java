@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
@@ -70,10 +71,11 @@ public class MapDemoActivity extends FragmentActivity implements
     private long UPDATE_INTERVAL = 60000;  /* 60 secs */
     private long FASTEST_INTERVAL = 5000; /* 5 secs */
 
-    private LocationManager lm;
+
     private double latitude;
     private double longitude;
     private float accuracy;
+
 
     private Marker markerSearch = null;
 
@@ -88,6 +90,8 @@ public class MapDemoActivity extends FragmentActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_demo_activity);
 
+
+        // We create the map fragment
         mapFragment = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
         if (mapFragment != null) {
             mapFragment.getMapAsync(new OnMapReadyCallback() {
@@ -105,9 +109,10 @@ public class MapDemoActivity extends FragmentActivity implements
     }
 
     public String[] loadMap(GoogleMap googleMap) {
+
+        // We create the map and load it
         map = googleMap;
         String tokens[] = null;
-
 
         if (map != null) {
             // Map is ready
@@ -125,11 +130,12 @@ public class MapDemoActivity extends FragmentActivity implements
             Toast.makeText(this, "Error - Map was null!!", Toast.LENGTH_SHORT).show();
         }
 
+
+        // Here we set the kml file we want to parse
         try {
             AssetManager mng = this.getAssets();
             InputStream str = mng.open("doc.kml");
-            /*File fXmlFile = new File(
-                    "/assets/doc.kml");*/
+
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory
                     .newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -137,63 +143,47 @@ public class MapDemoActivity extends FragmentActivity implements
 
             doc.getDocumentElement().normalize();
 
+            // We parse the KML file, we get every element with the tag name "Placemark" and put them into a node list
+
             NodeList nList = doc.getElementsByTagName("Placemark");
             int temp;
             for (temp = 0; temp < nList.getLength(); temp++) {
 
                 Node nNode = nList.item(temp);
 
+                // We look for the description content between "description" tag in each Placemark node
+
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 
                     Element eElement = (Element) nNode;
 
-                    //final String nameMarker = eElement.getElementsByTagName("name").item(0)
-                    //        .getTextContent();
-
-                    //ArrayList<String> nodeList = new ArrayList<String>();
-
-                    //NodeList nodeList = doc.getElementsByTagName("description");
-
-                    //nodeList.add(eElement.getElementsByTagName("description").item(0).getTextContent());
-                    //.getTextContent()
-
-                    //String desc1 = null;
-                    //String td = "</td>";
-                    //String desc3 = null;
-                    //String tokens[] = null;
-                    //for (int temp1 = 1; temp1 < nodeList.getLength(); temp1++) {
-                    //  Node nNode1 = nodeList.item(temp1);
-
-                    //if (nNode1.getNodeType() == Node.ELEMENT_NODE) {
-
-                    //desc1 =  nNode1.getTextContent();
+                    // We take the content from the "description" tag and put in into a Spanned, we also remove the html tags into the content
 
                     Spanned desc2 = Html.fromHtml(eElement.getElementsByTagName("description").item(0)
                             .getTextContent());
 
+                    // We split the string with the content we need to use it in a nice layout after
+                    // We are using a Pattern to do it
+
                     String split = "VOIE|LOCALISATION|PLACE_ELARGIE|ETAT|DUREE|NOMBRE_PLACES|CODE";
                     Pattern p = Pattern.compile(split);
                     tokens = p.split(desc2);
+
+                    // Sometimes informations are empty or "Null" we replace it by "Illimité" because when
+                    // the duration time on a parking slot it not provided it means it's unlimited (verified with SITG)
 
                     if (tokens[5].equals("") || (tokens[5].equals("<Null>"))) {
 
                         tokens[5] = "Illimité";
                     }
 
-                    //Matcher m = p.matcher(desc2);
-                    //m.find();
-                    //String text = m.group(1);
-                    //System.out.println(tokens);
-
-                    //final String localisationMarker = eElement1.getElementsByTagName("name").item(0)
-                    //.getTextContent();
-                    // }
-                    //}
-
-                    //System.out.println(desc1);
+                    // We take the coordinates into the "coordinates" tag and put them into a string
 
                     String coordinates = eElement.getElementsByTagName("coordinates")
                             .item(0).getTextContent();
+
+                    // The coordinates are not well formated into the kml file so we have to reformat them like this we can create a LatLng variable
+                    // We are using a StringTokenizer to do it
 
                     StringTokenizer tokens1 = new StringTokenizer(coordinates, ",");
                     String lon = tokens1.nextToken();
@@ -201,16 +191,15 @@ public class MapDemoActivity extends FragmentActivity implements
                     double lati = Double.parseDouble(lat);
                     double lngi = Double.parseDouble(lon);
 
-                    //lon = lon.trim();
-                    //lat = lat.trim();
-
                     LatLng LOCATION = new LatLng(lati, lngi);
 
-                    //Toast.makeText(this, "Location :" + LOCATION, Toast.LENGTH_SHORT).show();
+                    // We create the snippet for the marker on the map
+                    //The snippet contains all the informations about the parking slot
 
                     String snippet = "Voie : " +tokens[1] + System.getProperty("line.separator") + "Localisation : "+tokens[2] + System.getProperty("line.separator") + "Place élargie : "+tokens[3] + System.getProperty("line.separator") + "Durée maximum : " +tokens[5] + System.getProperty("line.separator") + "Nombre de places : "+tokens[6];
 
-
+                    // We create the marker with all the informatations that we took before (Location, title, snippet)
+                    // We put a custom icon for the marker on the map and also put some transparency on these icons
 
                     map.addMarker(new MarkerOptions()
                             .position(LOCATION)
@@ -219,6 +208,9 @@ public class MapDemoActivity extends FragmentActivity implements
                             .snippet(snippet)
                             .icon(BitmapDescriptorFactory
                                     .fromResource(R.drawable.symbol)));
+
+                    // We create a OnInfoWindowClickListener like this when the user touch on the marker he gets the informations
+
                     map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
                         @Override
                         public void onInfoWindowClick(com.google.android.gms.maps.model.Marker marker) {
@@ -239,7 +231,21 @@ public class MapDemoActivity extends FragmentActivity implements
 
                         @Override
 
-                        public View getInfoContents(Marker marker) {
+                        public View getInfoContents(final Marker marker) {
+
+                            TextView txtLink = ((TextView) contents.findViewById(R.id.link));
+                            txtLink.setOnClickListener(new View.OnClickListener() {
+
+                                @Override
+                                public void onClick(View view) {
+
+                                    Uri gmmIntentUri = Uri.parse("google.navigation:q="+marker.getPosition());
+                                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                                    mapIntent.setPackage("com.google.android.apps.maps");
+                                }
+
+                            });
+
 
 
                             TextView txtTitle = ((TextView) contents.findViewById(R.id.titre));
@@ -282,34 +288,6 @@ public class MapDemoActivity extends FragmentActivity implements
         }
         return new String[0];
     }
-
-
-/*
-        JSoupParser parser = new JSoupParser();
-        AssetManager mng = getAssets();
-        try {
-            InputStream str = mng.open("doc.kml");
-            List<ArrayList<LatLng>> list = parser.getCoordinateArrays(str);
-            for (ArrayList<LatLng> arrayList : list) {
-                MarkerOptions markOptions = new MarkerOptions();
-                for (LatLng latLong : arrayList) {
-                    //System.out.get(latLng.latitude + " - " + latLng.longitude);
-                    LatLng temp = new LatLng(latLong.longitude, latLong.latitude);
-
-                    map.addMarker(markOptions
-                            .position(temp)
-                            .alpha(0.5f)
-                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.symbol))
-                    );
-                }
-                //List<MarkerOptions> markers = new ArrayList<MarkerOptions>();
-                //System.out.println(latLng.latitude + " - " + latLng.longitude);
-
-            }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }*/
 
 
     protected void connectClient() {
