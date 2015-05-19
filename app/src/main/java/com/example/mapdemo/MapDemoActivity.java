@@ -76,14 +76,8 @@ public class MapDemoActivity extends FragmentActivity implements
     private double longitude;
     private float accuracy;
 
-    //Test synchro github
-
     private Marker markerSearch = null;
 
-    /*
-     * Define a request code to send to Google Play services This code is
-     * returned in Activity.onActivityResult
-     */
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
     @Override
@@ -220,8 +214,11 @@ public class MapDemoActivity extends FragmentActivity implements
                     });
 
 
+                    // We made a custom InfoWindowAdapter for each marker, like this we can put every content we want
+
                     map.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
+                        // We set the xml layout file of the window
                         View contents = getLayoutInflater().inflate(R.layout.info_window_layout, null);
 
                         @Override
@@ -231,7 +228,7 @@ public class MapDemoActivity extends FragmentActivity implements
                         }
 
                         @Override
-
+                        // We set the content on each textview from the layout
                         public View getInfoContents(final Marker marker) {
 
 
@@ -267,8 +264,6 @@ public class MapDemoActivity extends FragmentActivity implements
                 }
 
             }
-
-            //showLocation();
 
         } catch (Exception e) {
             Log.e("Buildmap Error", e.getMessage());
@@ -518,6 +513,7 @@ public class MapDemoActivity extends FragmentActivity implements
 
     private void showLocations(Cursor c, GoogleMap map){
 
+        //Create a marker when user search a place
 
         MarkerOptions markerOptions = null;
         LatLng position = null;
@@ -535,6 +531,8 @@ public class MapDemoActivity extends FragmentActivity implements
             CameraUpdate cameraPosition = CameraUpdateFactory.newLatLng(position);
             map.animateCamera(cameraPosition);
         }
+
+        //remove the marker when clicking on the map
 
         map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
