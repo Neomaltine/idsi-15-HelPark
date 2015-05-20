@@ -4,7 +4,7 @@
     android:hint="@string/search_hint"
     android:searchSettingsDescription="@string/search_settings"
 
-    android:searchSuggestAuthority="com.example.mapdemo.PlaceProvider"
+    android:searchSuggestAuthority="ch.unige.idsi15.helpark.PlaceProvider"
     android:searchSuggestIntentAction="android.intent.action.VIEW"
     android:searchSuggestSelection=" ?"
     android:searchSuggestThreshold="2" >
