@@ -202,7 +202,7 @@ public class MapDemoActivity extends FragmentActivity implements
                             .alpha(0.5f)
                             .snippet(snippet)
                             .icon(BitmapDescriptorFactory
-                                    .fromResource(R.drawable.symbol)));
+                                    .fromResource(R.drawable.ic_launcher)));
 
                     // We create a OnInfoWindowClickListener like this when the user touch on the marker he gets the informations
 
